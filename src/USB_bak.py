@@ -114,9 +114,9 @@ if __name__ == '__main__':
                 bakpath = os.path.join(name, 'USB.bak')
                 t = os.path.exists(bakpath)
                 if t:  # 没有文件则不是需要备份的u盘
-                    copy(name, 'thread_' + str(threadCount))
-                    # thread = Thread(target=copy, args=(name, 'thread_' + str(threadCount),))  # 创建线程去复制指定磁盘
-                    # thread.start()  # 开启线程
-                    # print('thread_' + str(threadCount) + '-开始复制%s盘文件...' % (name[:1]))
-                    # threadCount = threadCount + 1  # 线程计数+1
+                    # copy(name, 'thread_' + str(threadCount))
+                    thread = Thread(target=copy, args=(name, 'thread_' + str(threadCount),))  # 创建线程去复制指定磁盘
+                    thread.start()  # 开启线程
+                    print('thread_' + str(threadCount) + '-开始复制%s盘文件...' % (name[:1]))
+                    threadCount = threadCount + 1  # 线程计数+1
         time.sleep(10)   # 延时10秒进行下一次数据获取
