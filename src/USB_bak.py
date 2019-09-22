@@ -104,15 +104,18 @@ if __name__ == '__main__':
     while True:
 
         newDiskList = getDiskMessage()  # 获取新数据
+        print('当前磁盘列表：' + str(oldDiskName))
         if len(newDiskList) > 0:
             print('新磁盘列表：' + str(newDiskList))
-            print('当前磁盘列表：' + str(oldDiskName))
+
 
 
         if not len(newDiskList) == 0:   # 检测到有新u盘插入
             time.sleep(10)      # 延迟等待u盘加载
             for name in newDiskList:  # 根据新获取到的数据去复制文件
-                if os.path.exists('USB.bak'):  # 没有文件则不是需要备份的u盘
+                # path = os.path.join(name, 'USB.bak')
+                t = os.path.exists(os.path.join(name, 'USB.bak'))
+                if t:  # 没有文件则不是需要备份的u盘
                     # copy(name, 'thread_' + str(threadCount))
                     thread = Thread(target=copy, args=(name, 'thread_' + str(threadCount),))  # 创建线程去复制指定磁盘
                     thread.start()  # 开启线程
