@@ -123,6 +123,7 @@ if __name__ == '__main__':
     getDiskMessage()  # 获取初始数据
     targetRoot = chackFirst()  # 软件初始化
     threadCount = 0  # 线程计数
+    printLog("开始运行")
     while True:
 
         newDiskList = getDiskMessage()  # 获取新数据
