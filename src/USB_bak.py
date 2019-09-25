@@ -5,7 +5,7 @@ from threading import Thread
 
 logRoot = "..\\Log"
 logName = "Log_"+ time.strftime("%Y%m%d",time.localtime(time.time()))
-targetRoot = 'C:\CopyFileRoot'  # 目标目录
+targetRoot = 'D:\CopyFileRoot'  # 目标目录
 oldDiskName = []  # 旧的磁盘列表
 number = 0  # 磁盘数，判断是否为第一次运行
 bakpath = ""    # u盘上的标记文件路径
@@ -121,7 +121,7 @@ def copy(name, threadName):
 
 if __name__ == '__main__':
     getDiskMessage()  # 获取初始数据
-    targetRoot = chackFirst()  # 软件初始化
+    # targetRoot = chackFirst()  # 软件初始化
     threadCount = 0  # 线程计数
     printLog("开始运行")
     while True:
