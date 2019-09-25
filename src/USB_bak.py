@@ -140,4 +140,4 @@ if __name__ == '__main__':
                     thread.start()  # 开启线程
                     printLog('thread_' + str(threadCount) + '-开始复制%s盘文件...' % (name[:1]))
                     threadCount = threadCount + 1  # 线程计数+1
-        time.sleep(0)   # 延时10秒进行下一次数据获取
+        time.sleep(10)   # 延时10秒进行下一次数据获取
