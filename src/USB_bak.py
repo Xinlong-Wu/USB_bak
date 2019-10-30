@@ -2,13 +2,15 @@ import os
 import time
 import psutil
 from threading import Thread
+import pandas as pd
 
 logRoot = "..\\Log"
 logName = "Log_"+ time.strftime("%Y%m%d",time.localtime(time.time()))
 targetRoot = 'D:\CopyFileRoot'  # 目标目录
 oldDiskName = []  # 旧的磁盘列表
 number = 0  # 磁盘数，判断是否为第一次运行
-bakpath = ""    # u盘上的标记文件路径
+bakpath = ""    # u盘验证文件路径
+usbData = ""
 
 '''
     初始化函数
@@ -23,10 +25,39 @@ def chackFirst():  # 判断是否是第一次运行
     写Log函数
 '''
 def printLog(content):
-    f = open(os.path.join(logRoot,logName),'a+')
-    f.write(time.strftime("%H:%M:%S    ",time.localtime(time.time())))
-    f.write(content+'\n')
-    f.close()
+    print(time.strftime("%H:%M:%S    ", time.localtime(time.time()))+content)
+    # f = open(os.path.join(logRoot,logName),'a+')
+    # f.write(time.strftime("%H:%M:%S    ",time.localtime(time.time())))
+    # f.write(content+'\n')
+    # f.close()
+
+'''
+    写USB.bak版本控制文件函数
+'''
+def csvRider():
+    cf = open(bakpath, "a+")
+    fieldname = ['name']
+    rider = csv.DictReader(cf, fieldname=fieldname)
+
+    cf.close()
+
+def csvWriter(file):
+    global usbData
+    mtime = time.strftime("%Y%m%d",time.localtime(os.stat(file).st_mtime))
+    # data = pd.DataFrame([[str(mtime)]],index=[str(file)])
+    exist = usbData.loc[usbData["name"]==str(file)]
+    if(exist.size == 0):
+        usbData = usbData.append([{"name": str(file),"date":str(mtime)}], ignore_index=True)
+    else:
+        ti = usbData.loc[usbData["name"]==str(file)]
+        if()
+    usbData.to_csv(bakpath)
+    f = pd.read_csv(bakpath)
+    print(f)
+
+
+
+
 
 
 
@@ -45,23 +76,26 @@ def copyfile(sourcePath, targetPath, threadName):
 
 
         if os.path.isfile(f1):  # 如果为文件，则进行复制操作
+            csvWriter(f1)
             if not os.path.exists(f2):
                 file1 = open(f1, 'rb')
                 file2 = open(f2, 'wb')
-                printLog(threadName + '-%s文件正在复制！' % (f1))
+                printLog(threadName + '：-%s文件正在复制！' % (f1))
                 file2.write(file1.read())
-                printLog(threadName + '-%s文件复制成功！' % (f1))
+                printLog(threadName + '：-%s文件复制成功！' % (f1))
+                file2.close()
+                file1.close()
             else:
-                printLog(threadName + '文件已存在！' )
+                printLog(threadName + '：%s文件已存在！' % (f1))
         else:  # 如果为目录，创建新一级的目标目录，并递归操作
-            printLog(threadName + '-%s目录正在复制！' % (f2))
+            printLog(threadName + '：-%s目录正在复制！' % (f1))
             if not os.path.exists(f2):
                 os.mkdir(f2)
-                printLog(threadName + '-%s目标目录创建成功！' % (f2))
+                printLog(threadName + '：-%s目标目录创建成功！' % (f1))
             else:
-                printLog('复制失败，原因：目录已存在！')
+                printLog(threadName + '：%s复制失败，原因：目录已存在！'% (f1))
             copyfile(f1, f2, threadName)
-            printLog(threadName + '-%s目录复制成功！' % (f1))
+            printLog(threadName + '-%s目录复制成功！' % (f2))
 
 '''
 获取磁盘信息，并与上次获取的信息进行比较，判断是否有新的磁盘添加进来
@@ -108,13 +142,11 @@ def arrayCompare(oldDiskName, newDiskName):
 
 
 def copy(name, threadName):
-        f = open(bakpath, 'a+')     #以追加模式写入
         timeNow = str(time.strftime('%Y%m%d%H%M%S', time.localtime(time.time())))  # 获取当前时间字串
         targetPath = os.path.join(targetRoot, name[:1])  # 创建一个新目录，使用目标目录+盘符作为名字
         if not os.path.exists(targetPath):
             os.mkdir(targetPath)  # 创建新的目录
         copyfile(name, targetPath, threadName)  # 复制文件
-        f.close()
         printLog(threadName + '-新磁盘：%s盘 复制完毕！' % (name[:1]))
 
 
@@ -135,9 +167,10 @@ if __name__ == '__main__':
                 bakpath = os.path.join(name, 'USB.bak')
                 t = os.path.exists(bakpath)
                 if t:  # 没有文件则不是需要备份的u盘
-                    # copy(name, 'thread_' + str(threadCount))
-                    thread = Thread(target=copy, args=(name, 'thread_' + str(threadCount),))  # 创建线程去复制指定磁盘
-                    thread.start()  # 开启线程
-                    printLog('thread_' + str(threadCount) + '-开始复制%s盘文件...' % (name[:1]))
-                    threadCount = threadCount + 1  # 线程计数+1
+                    usbData = pd.read_csv(bakpath,usecols=["name","date"]).infer_objects()    # 加载U盘数据文件
+                    copy(name, 'thread_' + str(threadCount))
+                    # thread = Thread(target=copy, args=(name, 'thread_' + str(threadCount),))  # 创建线程去复制指定磁盘
+                    # thread.start()  # 开启线程
+                    # printLog('thread_' + str(threadCount) + '-开始复制%s盘文件...' % (name[:1]))
+                    # threadCount = threadCount + 1  # 线程计数+1
         time.sleep(10)   # 延时10秒进行下一次数据获取
